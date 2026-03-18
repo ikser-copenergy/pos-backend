@@ -4,6 +4,7 @@ import { usersController } from "../modules/users";
 import { locationsController } from "../modules/locations";
 import { categoriesController } from "../modules/categories";
 import { productsController } from "../modules/products";
+import { uploadsController } from "../modules/uploads/uploads.controller";
 import { inventoryController } from "../modules/inventory";
 import { customersController } from "../modules/customers";
 import { suppliersController } from "../modules/suppliers";
@@ -13,6 +14,7 @@ import { invoicesController } from "../modules/invoices";
 
 const router = Router();
 
+router.use("/uploads", uploadsController);
 router.use("/tenants", tenantsController);
 router.use("/users", usersController);
 router.use("/locations", locationsController);

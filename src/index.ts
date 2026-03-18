@@ -1,3 +1,4 @@
+import path from "path";
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
@@ -10,6 +11,7 @@ const port = Number(process.env.PORT) || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (_req, res) => {
   res.json({

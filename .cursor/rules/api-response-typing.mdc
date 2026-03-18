@@ -1,0 +1,33 @@
+---
+description: Tipado obligatorio en ApiResponse para todos los controllers
+globs: src/modules/**/*.controller.ts
+alwaysApply: false
+---
+
+# ApiResponse con tipado obligatorio
+
+Todos los endpoints deben usar `sendSuccess` con el tipo explícito de `data`. No se permiten controllers ambiguos.
+
+## Reglas
+
+1. **sendSuccess siempre con tipo genérico explícito**: `sendSuccess<TipoApi>(res, mensaje, data)`
+2. **data es obligatorio**: Para DELETE usar `sendSuccess<null>(res, "Eliminado correctamente", null)`
+3. **Tipos en `src/shared/apiTypes.ts`**: Usar los tipos `*Api` (TenantApi, CategoryApi, ProductApi, etc.)
+
+## Ejemplo
+
+```typescript
+import type { CategoryApi } from "../../shared/apiTypes";
+
+// Lista
+sendSuccess<CategoryApi[]>(res, "Listado correctamente", categories);
+
+// Uno
+sendSuccess<CategoryApi>(res, "Obtenido correctamente", category);
+
+// Crear/Actualizar
+sendSuccess<CategoryApi>(res, "Creado correctamente", category, 201);
+
+// Eliminar
+sendSuccess<null>(res, "Eliminado correctamente", null);
+```

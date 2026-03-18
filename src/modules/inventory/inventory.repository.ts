@@ -11,4 +11,22 @@ export const inventoryRepository = {
       where: { id },
       include: { product: true, variant: true, location: true },
     }),
+  create: (data: {
+    tenantId: string;
+    productId: string;
+    variantId?: string;
+    locationId: string;
+    quantity?: number;
+  }) =>
+    prisma.inventory.create({
+      data,
+      include: { product: true, variant: true, location: true },
+    }),
+  update: (id: string, data: { quantity?: number }) =>
+    prisma.inventory.update({
+      where: { id },
+      data,
+      include: { product: true, variant: true, location: true },
+    }),
+  delete: (id: string) => prisma.inventory.delete({ where: { id } }),
 };
