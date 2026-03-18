@@ -1,0 +1,275 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  CASHIER
+}
+
+enum ProductType {
+  SIMPLE
+  VARIANT
+  SERVICE
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CARD
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCED
+  ERROR
+}
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  subdomain   String   @unique
+  plan        String?
+  status      String?
+  createdAt   DateTime @default(now())
+
+  users             User[]
+  locations         Location[]
+  products          Product[]
+  categories        Category[]
+  customers         Customer[]
+  suppliers         Supplier[]
+  sales             Sale[]
+  inventory         Inventory[]
+  inventoryMovements InventoryMovement[]
+  invoices          Invoice[]
+  purchases         Purchase[]
+}
+
+model User {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  email       String
+  password    String
+  role        UserRole
+  status      String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  sales       Sale[]
+}
+
+model Location {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  address     String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  inventory   Inventory[]
+  sales       Sale[]
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  parentId    String?
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  products    Product[]
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  description  String?
+  categoryId   String?
+  type         ProductType
+  unitType     String?
+  sku          String?
+  barcode      String?
+  costPrice    Float?
+  salePrice    Float?
+  trackStock   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  category     Category? @relation(fields: [categoryId], references: [id])
+  variants     ProductVariant[]
+  inventory    Inventory[]
+  saleItems    SaleItem[]
+}
+
+model ProductVariant {
+  id          String   @id @default(uuid())
+  productId   String
+  name        String
+  sku         String?
+  barcode     String?
+  costPrice   Float?
+  salePrice   Float?
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id])
+  inventory   Inventory[]
+  saleItems   SaleItem[]
+}
+
+model Inventory {
+  id          String   @id @default(uuid())
+  tenantId    String
+  productId   String
+  variantId   String?
+  locationId  String
+  quantity    Float    @default(0)
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  location    Location @relation(fields: [locationId], references: [id])
+}
+
+model InventoryMovement {
+  id          String   @id @default(uuid())
+  tenantId    String
+  productId   String
+  variantId   String?
+  locationId  String
+  type        String
+  quantity    Float
+  referenceId String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  sales       Sale[]
+}
+
+model Supplier {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  purchases   Purchase[]
+}
+
+model Sale {
+  id            String   @id @default(uuid())
+  tenantId      String
+  locationId    String
+  userId        String
+  customerId    String?
+  total         Float
+  tax           Float?
+  discount      Float?
+  status        String?
+  syncStatus    SyncStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  location      Location @relation(fields: [locationId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
+  payments      Payment[]
+  invoice       Invoice?
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String
+  variantId   String?
+  quantity    Float
+  unitPrice   Float
+  total       Float
+
+  sale        Sale     @relation(fields: [saleId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  saleId      String
+  method      PaymentMethod
+  amount      Float
+  reference   String?
+  createdAt   DateTime @default(now())
+
+  sale        Sale     @relation(fields: [saleId], references: [id])
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  tenantId      String
+  saleId        String   @unique
+  number        String
+  customerName  String?
+  customerRTN   String?
+  total         Float
+  tax           Float?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  sale          Sale     @relation(fields: [saleId], references: [id])
+}
+
+model Purchase {
+  id          String   @id @default(uuid())
+  tenantId    String
+  supplierId  String
+  locationId  String
+  total       Float
+  status      String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  items       PurchaseItem[]
+}
+
+model PurchaseItem {
+  id          String   @id @default(uuid())
+  purchaseId  String
+  productId   String
+  variantId   String?
+  quantity    Float
+  costPrice   Float
+  total       Float
+
+  purchase    Purchase @relation(fields: [purchaseId], references: [id])
+}
