@@ -11,28 +11,24 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
-/** Respuesta exitosa: data es obligatorio y tipado. */
-export interface ApiResponseSuccess<T> {
-  success: true;
-  message: string;
-  errors: [];
-  data: T;
-}
+export type {
+  ApiResponse,
+  ApiResponseSuccess,
+  ApiResponseError,
+} from "./apiTypes";
 
-/** Respuesta de error: sin data. */
-export interface ApiResponseError {
-  success: false;
-  message: string;
-  errors: string[];
-}
+import type { ApiResponseSuccess, ApiResponseError } from "./apiTypes";
 
-/** ApiResponse tipado. En éxito, data es obligatorio. */
-export type ApiResponse<T> = ApiResponseSuccess<T> | ApiResponseError;
-
-export function apiSuccess<T>(message: string, data: T): ApiResponseSuccess<T> {
+export function apiSuccess<T>(
+  message: string,
+  data: T
+): ApiResponseSuccess<T> {
   return { success: true, message, errors: [], data };
 }
 
-export function apiError(message: string, errors: string[] = []): ApiResponseError {
+export function apiError(
+  message: string,
+  errors: string[] = []
+): ApiResponseError {
   return { success: false, message, errors };
 }

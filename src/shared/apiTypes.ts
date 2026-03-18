@@ -1,6 +1,23 @@
 import type { Prisma } from "@prisma/client";
 
-/** Tipos de respuesta API inferidos de Prisma con relaciones incluidas */
+/** Tipos de respuesta API - ApiResponse con data tipado obligatoriamente */
+export interface ApiResponseSuccess<T> {
+  success: true;
+  message: string;
+  errors: [];
+  data: T;
+}
+
+export interface ApiResponseError {
+  success: false;
+  message: string;
+  errors: string[];
+}
+
+/** ApiResponse tipado. En éxito, data es obligatorio. */
+export type ApiResponse<T> = ApiResponseSuccess<T> | ApiResponseError;
+
+/** Tipos de entidades inferidos de Prisma con relaciones incluidas */
 
 export type TenantApi = Prisma.TenantGetPayload<object>;
 

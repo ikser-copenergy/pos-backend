@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { ApiResponseSuccess } from "./types";
+import type { ApiResponseSuccess } from "./apiTypes";
 
 /** Envía respuesta exitosa. data es obligatorio y debe estar tipado explícitamente. */
 export function sendSuccess<T>(res: Response, message: string, data: T, status = 200) {
