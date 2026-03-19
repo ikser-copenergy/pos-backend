@@ -57,6 +57,19 @@ async function main() {
     },
   });
 
+  const user = await prisma.user.upsert({
+    where: { id: "seed-user-1" },
+    update: {},
+    create: {
+      id: "seed-user-1",
+      tenantId: tenant.id,
+      name: "Usuario Caja",
+      email: "caja@pos.local",
+      password: "hashed-placeholder",
+      role: "CASHIER",
+    },
+  });
+
   const existing = await prisma.inventory.findFirst({
     where: {
       tenantId: tenant.id,
@@ -76,7 +89,7 @@ async function main() {
     });
   }
 
-  console.log("Seed completado:", { tenant: tenant.name, location: location.name, product: product.name });
+  console.log("Seed completado:", { tenant: tenant.name, location: location.name, product: product.name, user: user.name });
 }
 
 main()

@@ -106,6 +106,7 @@ model Product {
   costPrice    Float?
   salePrice    Float?
   trackStock   Boolean  @default(true)
+  archived     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

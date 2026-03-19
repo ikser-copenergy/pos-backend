@@ -1,15 +1,23 @@
 import { prisma } from "../../lib/prisma";
 
 export const productsRepository = {
-  findAll: (tenantId?: string) =>
+  findAll: (tenantId?: string, includeArchived = false) =>
     prisma.product.findMany({
-      where: tenantId ? { tenantId } : undefined,
+      where: {
+        ...(tenantId ? { tenantId } : {}),
+        ...(includeArchived ? {} : { archived: false }),
+      },
       include: { category: true, variants: true, images: true },
     }),
   findById: (id: string) =>
     prisma.product.findUnique({
       where: { id },
-      include: { category: true, variants: true, images: true },
+      include: {
+        category: true,
+        variants: true,
+        images: true,
+        inventory: { where: { variantId: null }, include: { location: true } },
+      },
     }),
   create: (data: {
     tenantId: string;
@@ -57,6 +65,7 @@ export const productsRepository = {
       costPrice?: number;
       salePrice?: number;
       trackStock?: boolean;
+      archived?: boolean;
       imageUrl?: string;
     }
   ) => {

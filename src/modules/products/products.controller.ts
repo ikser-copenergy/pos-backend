@@ -8,7 +8,8 @@ const router = Router();
 router.get("/", async (req, res) => {
   try {
     const tenantId = req.query.tenantId as string | undefined;
-    const products = await productsService.getAll(tenantId);
+    const includeArchived = req.query.includeArchived === "true";
+    const products = await productsService.getAll(tenantId, includeArchived);
     sendSuccess<ProductApi[]>(res, "Listado correctamente", products);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al listar productos";
@@ -44,6 +45,7 @@ router.post("/", async (req, res) => {
       salePrice,
       trackStock,
       imageUrl,
+      inventoryByLocation,
     } = req.body;
     if (!tenantId || !name || !type) {
       return sendError(res, "Datos incompletos", [
@@ -63,7 +65,16 @@ router.post("/", async (req, res) => {
       salePrice: salePrice != null ? Number(salePrice) : undefined,
       trackStock: trackStock != null ? Boolean(trackStock) : undefined,
       imageUrl,
+      inventoryByLocation: Array.isArray(inventoryByLocation)
+        ? inventoryByLocation.map((x: { locationId: string; quantity?: number }) => ({
+            locationId: x.locationId,
+            quantity: Number(x.quantity) || 0,
+          }))
+        : undefined,
     });
+    if (!product) {
+      return sendError(res, "Error al crear producto", ["Product not found"], 500);
+    }
     sendSuccess<ProductApi>(res, "Creado correctamente", product, 201);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al crear producto";
@@ -84,7 +95,9 @@ router.patch("/:id", async (req, res) => {
       costPrice,
       salePrice,
       trackStock,
+      archived,
       imageUrl,
+      inventoryByLocation,
     } = req.body;
     const product = await productsService.update(req.params.id, {
       name,
@@ -97,8 +110,18 @@ router.patch("/:id", async (req, res) => {
       costPrice: costPrice != null ? Number(costPrice) : undefined,
       salePrice: salePrice != null ? Number(salePrice) : undefined,
       trackStock: trackStock != null ? Boolean(trackStock) : undefined,
+      archived: archived != null ? Boolean(archived) : undefined,
       imageUrl,
+      inventoryByLocation: Array.isArray(inventoryByLocation)
+        ? inventoryByLocation.map((x: { locationId: string; quantity?: number }) => ({
+            locationId: x.locationId,
+            quantity: Number(x.quantity) || 0,
+          }))
+        : undefined,
     });
+    if (!product) {
+      return sendError(res, "Error al actualizar producto", ["Product not found"], 500);
+    }
     sendSuccess<ProductApi>(res, "Actualizado correctamente", product);
   } catch (e) {
     const err =

@@ -29,7 +29,15 @@ export type LocationApi = Prisma.LocationGetPayload<object>;
 
 export type ProductApi = Prisma.ProductGetPayload<{
   include: { category: true; variants: true; images: true };
-}>;
+}> & {
+  inventory?: Array<{
+    id: string;
+    productId: string;
+    locationId: string;
+    quantity: number;
+    location: { id: string; name: string };
+  }>;
+};
 
 export type InventoryApi = Prisma.InventoryGetPayload<{
   include: { product: true; variant: true; location: true };
@@ -40,7 +48,13 @@ export type CustomerApi = Prisma.CustomerGetPayload<object>;
 export type SupplierApi = Prisma.SupplierGetPayload<object>;
 
 export type SaleApi = Prisma.SaleGetPayload<{
-  include: { items: true; payments: true; customer: true };
+  include: {
+    items: { include: { product: true; variant: true } };
+    payments: true;
+    customer: true;
+    location: true;
+    user: true;
+  };
 }>;
 
 export type PurchaseApi = Prisma.PurchaseGetPayload<{

@@ -11,6 +11,11 @@ export const inventoryRepository = {
       where: { id },
       include: { product: true, variant: true, location: true },
     }),
+  findByProductAndLocation: (productId: string, locationId: string) =>
+    prisma.inventory.findFirst({
+      where: { productId, locationId, variantId: null },
+      include: { product: true, variant: true, location: true },
+    }),
   create: (data: {
     tenantId: string;
     productId: string;
