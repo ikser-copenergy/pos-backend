@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcrypt";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
@@ -57,15 +58,30 @@ async function main() {
     },
   });
 
+  const hashedPassword = await bcrypt.hash("admin123", 10);
+
+  const admin = await prisma.user.upsert({
+    where: { id: "seed-admin-1" },
+    update: { password: hashedPassword },
+    create: {
+      id: "seed-admin-1",
+      tenantId: tenant.id,
+      name: "Administrador",
+      email: "admin@pos.local",
+      password: hashedPassword,
+      role: "ADMIN",
+    },
+  });
+
   const user = await prisma.user.upsert({
     where: { id: "seed-user-1" },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       id: "seed-user-1",
       tenantId: tenant.id,
       name: "Usuario Caja",
       email: "caja@pos.local",
-      password: "hashed-placeholder",
+      password: hashedPassword,
       role: "CASHIER",
     },
   });
@@ -89,7 +105,13 @@ async function main() {
     });
   }
 
-  console.log("Seed completado:", { tenant: tenant.name, location: location.name, product: product.name, user: user.name });
+  console.log("Seed completado:", {
+    tenant: tenant.name,
+    location: location.name,
+    product: product.name,
+    admin: `${admin.email} / admin123`,
+    user: `${user.email} / admin123`,
+  });
 }
 
 main()

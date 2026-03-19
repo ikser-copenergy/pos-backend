@@ -54,6 +54,7 @@ export type SaleApi = Prisma.SaleGetPayload<{
     customer: true;
     location: true;
     user: true;
+    invoice: true;
   };
 }>;
 
@@ -62,7 +63,17 @@ export type PurchaseApi = Prisma.PurchaseGetPayload<{
 }>;
 
 export type InvoiceApi = Prisma.InvoiceGetPayload<{
-  include: { sale: true };
+  include: {
+    sale: {
+      include: {
+        items: { include: { product: true; variant: true } };
+        payments: true;
+        customer: true;
+        location: true;
+        user: true;
+      };
+    };
+  };
 }>;
 
 export interface UploadResponse {

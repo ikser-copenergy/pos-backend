@@ -50,6 +50,7 @@ export const salesService = {
           customer: true,
           location: true,
           user: true,
+          invoice: true,
         },
       });
 

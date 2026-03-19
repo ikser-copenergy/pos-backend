@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authController } from "../modules/auth/auth.controller";
 import { tenantsController } from "../modules/tenants";
 import { usersController } from "../modules/users";
 import { locationsController } from "../modules/locations";
@@ -11,8 +12,13 @@ import { suppliersController } from "../modules/suppliers";
 import { salesController } from "../modules/sales";
 import { purchasesController } from "../modules/purchases";
 import { invoicesController } from "../modules/invoices";
+import { requireAuth } from "../middleware/auth";
 
 const router = Router();
+
+router.use("/auth", authController);
+
+router.use(requireAuth);
 
 router.use("/uploads", uploadsController);
 router.use("/tenants", tenantsController);

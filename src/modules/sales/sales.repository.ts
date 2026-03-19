@@ -6,6 +6,7 @@ const saleInclude = {
   customer: true,
   location: true,
   user: true,
+  invoice: true,
 };
 
 export const salesRepository = {
