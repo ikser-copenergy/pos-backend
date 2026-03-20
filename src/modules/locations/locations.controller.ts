@@ -31,13 +31,18 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { tenantId, name, address } = req.body;
+    const { tenantId, name, address, isMain } = req.body;
     if (!tenantId || !name) {
       return sendError(res, "Datos incompletos", [
         "tenantId y name son requeridos",
       ]);
     }
-    const location = await locationsService.create({ tenantId, name, address });
+    const location = await locationsService.create({
+      tenantId,
+      name,
+      address,
+      isMain: !!isMain,
+    });
     sendSuccess<LocationApi>(res, "Creado correctamente", location, 201);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al crear ubicación";
@@ -47,10 +52,11 @@ router.post("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { name, address } = req.body;
+    const { name, address, isMain } = req.body;
     const location = await locationsService.update(req.params.id, {
       name,
       address,
+      isMain: isMain !== undefined ? !!isMain : undefined,
     });
     sendSuccess<LocationApi>(res, "Actualizado correctamente", location);
   } catch (e) {

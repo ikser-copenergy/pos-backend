@@ -29,6 +29,24 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.post("/:id/payments", async (req, res) => {
+  try {
+    const { method, amount, reference } = req.body;
+    if (!method || amount == null || amount <= 0) {
+      return sendError(res, "Datos incompletos", ["method y amount son requeridos"]);
+    }
+    const sale = await salesService.addPayment(req.params.id, {
+      method,
+      amount: Number(amount),
+      reference: reference || undefined,
+    });
+    sendSuccess<SaleApi>(res, "Pago registrado correctamente", sale);
+  } catch (e) {
+    const err = e instanceof Error ? e.message : "Error al registrar pago";
+    sendError(res, "Error al registrar pago", [err], 400);
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const {
@@ -43,14 +61,16 @@ router.post("/", async (req, res) => {
       items,
       payments,
     } = req.body;
-    if (!tenantId || !locationId || !userId || !items?.length || !payments?.length) {
+    if (!tenantId || !locationId || !userId || !items?.length) {
       return sendError(res, "Datos incompletos", [
-        "tenantId, locationId, userId, items y payments son requeridos",
+        "tenantId, locationId, userId e items son requeridos",
       ]);
     }
-    const totalPayments = payments.reduce((s: number, p: { amount?: number }) => s + (Number(p.amount) || 0), 0);
-    if (Math.abs(totalPayments - Number(total)) > 0.01) {
-      return sendError(res, "El total de pagos no coincide con el total de la venta");
+    const paymentsList = Array.isArray(payments) ? payments : [];
+    const totalPayments = paymentsList.reduce((s: number, p: { amount?: number }) => s + (Number(p.amount) || 0), 0);
+    const saleTotal = Number(total);
+    if (totalPayments > saleTotal + 0.01) {
+      return sendError(res, "El total de pagos no puede superar el total de la venta");
     }
     const sale = await salesService.create({
       tenantId,
@@ -68,7 +88,7 @@ router.post("/", async (req, res) => {
         unitPrice: Number(i.unitPrice),
         total: Number(i.total),
       })),
-      payments: payments.map((p: { method: string; amount: number; reference?: string }) => ({
+      payments: paymentsList.map((p: { method: string; amount: number; reference?: string }) => ({
         method: p.method,
         amount: Number(p.amount),
         reference: p.reference,

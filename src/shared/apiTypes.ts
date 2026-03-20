@@ -21,6 +21,8 @@ export type ApiResponse<T> = ApiResponseSuccess<T> | ApiResponseError;
 
 export type TenantApi = Prisma.TenantGetPayload<object>;
 
+export type SettingApi = Prisma.SettingGetPayload<object>;
+
 export type CategoryApi = Prisma.CategoryGetPayload<object>;
 
 export type UserApi = Prisma.UserGetPayload<object>;
@@ -44,6 +46,8 @@ export type InventoryApi = Prisma.InventoryGetPayload<{
 }>;
 
 export type CustomerApi = Prisma.CustomerGetPayload<object>;
+
+export type CustomerWithDebtApi = CustomerApi & { debt: number };
 
 export type SupplierApi = Prisma.SupplierGetPayload<object>;
 

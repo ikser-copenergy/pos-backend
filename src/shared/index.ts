@@ -12,6 +12,7 @@ export type {
   InventoryApi,
   CustomerApi,
   SupplierApi,
+  SettingApi,
   SaleApi,
   PurchaseApi,
   InvoiceApi,

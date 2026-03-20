@@ -45,6 +45,7 @@ model Tenant {
   createdAt   DateTime @default(now())
 
   users             User[]
+  settings          Setting[]
   locations         Location[]
   products          Product[]
   categories        Category[]
@@ -76,6 +77,7 @@ model Location {
   tenantId    String
   name        String
   address     String?
+  isMain      Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
@@ -283,4 +285,16 @@ model PurchaseItem {
   total       Float
 
   purchase    Purchase @relation(fields: [purchaseId], references: [id])
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  tenantId  String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, key])
 }

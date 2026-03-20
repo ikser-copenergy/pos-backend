@@ -105,6 +105,21 @@ async function main() {
     });
   }
 
+  await prisma.setting.upsert({
+    where: {
+      tenantId_key: { tenantId: tenant.id, key: "businessName" },
+    },
+    update: {},
+    create: { tenantId: tenant.id, key: "businessName", value: "Tienda Principal" },
+  });
+  await prisma.setting.upsert({
+    where: {
+      tenantId_key: { tenantId: tenant.id, key: "currency" },
+    },
+    update: {},
+    create: { tenantId: tenant.id, key: "currency", value: "L" },
+  });
+
   console.log("Seed completado:", {
     tenant: tenant.name,
     location: location.name,
