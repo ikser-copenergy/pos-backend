@@ -75,31 +75,34 @@ model Tax {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  tenantId    String
-  name        String
-  email       String
-  password    String
-  phone       String?
-  role        UserRole
-  status      String?
-  createdAt   DateTime @default(now())
+  id                 String   @id @default(uuid())
+  tenantId           String
+  name               String
+  email              String
+  password           String
+  phone              String?
+  role               UserRole
+  status             String?
+  defaultLocationId  String
+  createdAt          DateTime @default(now())
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  sales       Sale[]
+  tenant             Tenant   @relation(fields: [tenantId], references: [id])
+  defaultLocation    Location @relation("UserDefaultLocation", fields: [defaultLocationId], references: [id])
+  sales              Sale[]
 }
 
 model Location {
-  id          String   @id @default(uuid())
-  tenantId    String
-  name        String
-  address     String?
-  isMain      Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id                 String   @id @default(uuid())
+  tenantId           String
+  name               String
+  address            String?
+  isMain             Boolean  @default(false)
+  createdAt          DateTime @default(now())
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  inventory   Inventory[]
-  sales       Sale[]
+  tenant             Tenant   @relation(fields: [tenantId], references: [id])
+  usersWithDefault   User[]   @relation("UserDefaultLocation")
+  inventory          Inventory[]
+  sales              Sale[]
 }
 
 model Category {
@@ -125,8 +128,10 @@ model Product {
   barcode      String?
   costPrice    Float?
   salePrice    Float?
-  trackStock   Boolean  @default(true)
+  trackStock             Boolean  @default(true)
+  allowDecimalInventory  Boolean  @default(true)
   archived     Boolean  @default(false)
+  expiresAt    DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

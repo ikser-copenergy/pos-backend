@@ -43,6 +43,8 @@ export const productsRepository = {
     costPrice?: number;
     salePrice?: number;
     trackStock?: boolean;
+    allowDecimalInventory?: boolean;
+    expiresAt?: Date | null;
     imageUrl?: string;
   }) =>
     prisma.product.create({
@@ -59,6 +61,8 @@ export const productsRepository = {
         costPrice: data.costPrice,
         salePrice: data.salePrice,
         trackStock: data.trackStock ?? true,
+        allowDecimalInventory: data.allowDecimalInventory ?? true,
+        expiresAt: data.expiresAt,
         images: data.imageUrl
           ? { create: { url: data.imageUrl } }
           : undefined,
@@ -79,6 +83,8 @@ export const productsRepository = {
       costPrice?: number;
       salePrice?: number;
       trackStock?: boolean;
+      allowDecimalInventory?: boolean;
+      expiresAt?: Date | null;
       archived?: boolean;
       imageUrl?: string;
     }

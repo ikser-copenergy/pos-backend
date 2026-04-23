@@ -5,6 +5,25 @@ import { productsService } from "./products.service";
 
 const router = Router();
 
+function parseBodyExpiresAt(
+  v: unknown
+): Date | null | undefined {
+  if (v === undefined) return undefined;
+  if (v === null || v === "") return null;
+  if (typeof v === "string") {
+    const t = v.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+      const [y, m, d] = t.split("-").map((x) => parseInt(x, 10));
+      if (y && m && d) {
+        return new Date(y, m - 1, d, 12, 0, 0, 0);
+      }
+    }
+    const dt = new Date(t);
+    return Number.isNaN(dt.getTime()) ? undefined : dt;
+  }
+  return undefined;
+}
+
 router.get("/", async (req, res) => {
   try {
     const tenantId = req.query.tenantId as string | undefined;
@@ -46,6 +65,8 @@ router.post("/", async (req, res) => {
       costPrice,
       salePrice,
       trackStock,
+      allowDecimalInventory,
+      expiresAt,
       imageUrl,
       inventoryByLocation,
     } = req.body;
@@ -67,6 +88,9 @@ router.post("/", async (req, res) => {
       costPrice: costPrice != null ? Number(costPrice) : undefined,
       salePrice: salePrice != null ? Number(salePrice) : undefined,
       trackStock: trackStock != null ? Boolean(trackStock) : undefined,
+      allowDecimalInventory:
+        allowDecimalInventory != null ? Boolean(allowDecimalInventory) : undefined,
+      expiresAt: parseBodyExpiresAt(expiresAt),
       imageUrl,
       inventoryByLocation: Array.isArray(inventoryByLocation)
         ? inventoryByLocation.map((x: { locationId: string; quantity?: number }) => ({
@@ -99,6 +123,8 @@ router.patch("/:id", async (req, res) => {
       costPrice,
       salePrice,
       trackStock,
+      allowDecimalInventory,
+      expiresAt,
       archived,
       imageUrl,
       inventoryByLocation,
@@ -115,6 +141,9 @@ router.patch("/:id", async (req, res) => {
       costPrice: costPrice != null ? Number(costPrice) : undefined,
       salePrice: salePrice != null ? Number(salePrice) : undefined,
       trackStock: trackStock != null ? Boolean(trackStock) : undefined,
+      allowDecimalInventory:
+        allowDecimalInventory != null ? Boolean(allowDecimalInventory) : undefined,
+      expiresAt: parseBodyExpiresAt(expiresAt),
       archived: archived != null ? Boolean(archived) : undefined,
       imageUrl,
       inventoryByLocation: Array.isArray(inventoryByLocation)

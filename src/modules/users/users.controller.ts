@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
   try {
     const tenantId = req.user!.tenantId;
     const users = await usersService.getAll(tenantId);
-    sendSuccess(res, "Listado correctamente", users);
+    sendSuccess<typeof users>(res, "Listado correctamente", users);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al listar usuarios";
     sendError(res, "Error al obtener usuarios", [err], 500);
@@ -46,17 +46,23 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const tenantId = req.user!.tenantId;
-    const { name, email, password, phone } = req.body;
-    if (!name?.trim() || !email?.trim() || !password) {
-      return sendError(res, "Datos incompletos", ["name, email y password son requeridos"], 400);
+    const { name, email, password, phone, defaultLocationId } = req.body;
+    if (!name?.trim() || !email?.trim() || !password || !defaultLocationId) {
+      return sendError(
+        res,
+        "Datos incompletos",
+        ["name, email, password y defaultLocationId son requeridos"],
+        400
+      );
     }
     const user = await usersService.create(tenantId, {
       name: name.trim(),
       email: email.trim(),
       password,
       phone: phone?.trim() || undefined,
+      defaultLocationId,
     });
-    sendSuccess(res, "Usuario creado correctamente", user, 201);
+    sendSuccess<typeof user>(res, "Usuario creado correctamente", user, 201);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al crear usuario";
     const status = err.includes("Máximo") || err.includes("ya está registrado") ? 400 : 500;
@@ -67,17 +73,18 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const tenantId = req.user!.tenantId;
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, defaultLocationId } = req.body;
     const user = await usersService.update(req.params.id, tenantId, {
       name: name?.trim(),
       email: email?.trim(),
       phone: phone ?? undefined,
       password: password || undefined,
+      defaultLocationId: defaultLocationId || undefined,
     });
     if (!user) {
       return sendError(res, "Usuario no encontrado", ["User not found"], 404);
     }
-    sendSuccess(res, "Usuario actualizado correctamente", user);
+    sendSuccess<typeof user>(res, "Usuario actualizado correctamente", user);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al actualizar usuario";
     const status = err.includes("ya está en uso") ? 400 : 500;

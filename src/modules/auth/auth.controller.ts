@@ -25,17 +25,21 @@ function generateUniqueSubdomain(base: string): string {
   return `${slug}-${suffix}`;
 }
 
+interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  tenantId: string;
+  tenantName: string;
+  tenantLogoUrl?: string | null;
+  defaultLocationId: string;
+  defaultLocationName: string;
+}
+
 interface LoginResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    tenantId: string;
-    tenantName: string;
-    tenantLogoUrl?: string | null;
-  };
+  user: SessionUser;
 }
 
 router.post("/login", async (req, res) => {
@@ -73,6 +77,8 @@ router.post("/login", async (req, res) => {
         tenantId: user.tenantId,
         tenantName: user.tenant.name,
         tenantLogoUrl: user.tenant.logoUrl ?? null,
+        defaultLocationId: user.defaultLocationId,
+        defaultLocationName: user.defaultLocation.name,
       },
     });
   } catch (e) {
@@ -128,7 +134,7 @@ router.post("/register", upload.single("logo"), async (req, res) => {
         },
       });
 
-      await tx.location.create({
+      const mainLocation = await tx.location.create({
         data: {
           tenantId: tenant.id,
           name: "Principal",
@@ -152,8 +158,9 @@ router.post("/register", upload.single("logo"), async (req, res) => {
           password: hashedPassword,
           phone: `+504${phone}`,
           role: "ADMIN",
+          defaultLocationId: mainLocation.id,
         },
-        include: { tenant: true },
+        include: { tenant: true, defaultLocation: { select: { id: true, name: true } } },
       });
 
       return { user, tenant };
@@ -177,6 +184,8 @@ router.post("/register", upload.single("logo"), async (req, res) => {
         tenantId: result.user.tenantId,
         tenantName: result.user.tenant.name,
         tenantLogoUrl: result.tenant.logoUrl ?? null,
+        defaultLocationId: result.user.defaultLocationId,
+        defaultLocationName: result.user.defaultLocation.name,
       },
     }, 201);
   } catch (e) {
@@ -185,15 +194,7 @@ router.post("/register", upload.single("logo"), async (req, res) => {
   }
 });
 
-interface MeResponse {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  tenantId: string;
-  tenantName: string;
-  tenantLogoUrl?: string | null;
-}
+type MeResponse = SessionUser;
 
 router.get("/me", requireAuth, async (req, res) => {
   try {
@@ -209,6 +210,8 @@ router.get("/me", requireAuth, async (req, res) => {
       tenantId: user.tenantId,
       tenantName: user.tenant.name,
       tenantLogoUrl: user.tenant.logoUrl ?? null,
+      defaultLocationId: user.defaultLocationId,
+      defaultLocationName: user.defaultLocation.name,
     });
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al obtener usuario";

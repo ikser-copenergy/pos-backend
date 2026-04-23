@@ -14,6 +14,7 @@ import { purchasesController } from "../modules/purchases";
 import { invoicesController } from "../modules/invoices";
 import { settingsController } from "../modules/settings";
 import { taxesController } from "../modules/taxes";
+import { reportsController } from "../modules/reports";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
@@ -36,5 +37,6 @@ router.use("/purchases", purchasesController);
 router.use("/invoices", invoicesController);
 router.use("/settings", settingsController);
 router.use("/taxes", taxesController);
+router.use("/reports", reportsController);
 
 export { router as apiRoutes };

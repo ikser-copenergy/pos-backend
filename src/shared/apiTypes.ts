@@ -27,6 +27,33 @@ export type CategoryApi = Prisma.CategoryGetPayload<object>;
 
 export type TaxApi = Prisma.TaxGetPayload<object>;
 
+export interface TopProductRowApi {
+  productId: string;
+  productName: string;
+  sku: string | null;
+  quantitySold: number;
+  revenue: number;
+}
+
+export interface ExpiringSoonRowApi {
+  productId: string;
+  productName: string;
+  sku: string | null;
+  locationId: string;
+  locationName: string;
+  quantity: number;
+  expiresAt: string;
+  daysLeft: number;
+}
+
+export interface SalesByUserRowApi {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  saleCount: number;
+  totalRevenue: number;
+}
+
 export type UserApi = Prisma.UserGetPayload<object>;
 
 export type LocationApi = Prisma.LocationGetPayload<object>;
