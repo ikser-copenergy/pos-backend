@@ -1,19 +1,30 @@
 import { prisma } from "../../lib/prisma";
+import { deleteUploadByUrl } from "../../lib/upload";
 
 export const productsRepository = {
-  findAll: (tenantId?: string, includeArchived = false) =>
+  findAll: (tenantId?: string, includeArchived = false, search?: string) =>
     prisma.product.findMany({
       where: {
         ...(tenantId ? { tenantId } : {}),
         ...(includeArchived ? {} : { archived: false }),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { sku: { contains: search, mode: "insensitive" } },
+                { barcode: { contains: search, mode: "insensitive" } },
+              ],
+            }
+          : {}),
       },
-      include: { category: true, variants: true, images: true },
+      include: { category: true, tax: true, variants: true, images: true },
     }),
   findById: (id: string) =>
     prisma.product.findUnique({
       where: { id },
       include: {
         category: true,
+        tax: true,
         variants: true,
         images: true,
         inventory: { where: { variantId: null }, include: { location: true } },
@@ -22,6 +33,7 @@ export const productsRepository = {
   create: (data: {
     tenantId: string;
     name: string;
+    taxId: string;
     description?: string;
     categoryId?: string;
     type: string;
@@ -37,6 +49,7 @@ export const productsRepository = {
       data: {
         tenantId: data.tenantId,
         name: data.name,
+        taxId: data.taxId,
         description: data.description,
         categoryId: data.categoryId,
         type: data.type as "SIMPLE" | "VARIANT" | "SERVICE",
@@ -50,12 +63,13 @@ export const productsRepository = {
           ? { create: { url: data.imageUrl } }
           : undefined,
       },
-      include: { category: true, variants: true, images: true },
+      include: { category: true, tax: true, variants: true, images: true },
     }),
   update: async (
     id: string,
     data: {
       name?: string;
+      taxId?: string;
       description?: string;
       categoryId?: string;
       type?: string;
@@ -70,6 +84,10 @@ export const productsRepository = {
     }
   ) => {
     if (data.imageUrl !== undefined) {
+      const existing = await prisma.productImage.findMany({ where: { productId: id } });
+      for (const img of existing) {
+        deleteUploadByUrl(img.url);
+      }
       await prisma.productImage.deleteMany({ where: { productId: id } });
       if (data.imageUrl) {
         await prisma.productImage.create({
@@ -84,7 +102,7 @@ export const productsRepository = {
         ...rest,
         type: rest.type as "SIMPLE" | "VARIANT" | "SERVICE" | undefined,
       },
-      include: { category: true, variants: true, images: true },
+      include: { category: true, tax: true, variants: true, images: true },
     });
   },
 };

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import type { UserRole } from "../shared/roles";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "pos-jwt-fallback-secret";
 const JWT_EXPIRES_IN = "24h";
@@ -8,7 +9,7 @@ export interface JwtPayload {
   tenantId: string;
   email: string;
   name: string;
-  role: string;
+  role: UserRole;
 }
 
 export function signToken(payload: JwtPayload): string {

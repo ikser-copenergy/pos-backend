@@ -5,8 +5,8 @@ type CreateProductData = Parameters<typeof productsRepository.create>[0];
 type UpdateProductData = Parameters<typeof productsRepository.update>[1];
 
 export const productsService = {
-  getAll: (tenantId?: string, includeArchived?: boolean) =>
-    productsRepository.findAll(tenantId, includeArchived),
+  getAll: (tenantId?: string, includeArchived?: boolean, search?: string) =>
+    productsRepository.findAll(tenantId, includeArchived, search),
   getById: (id: string) => productsRepository.findById(id),
   create: async (
     data: CreateProductData & {

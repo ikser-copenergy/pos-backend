@@ -38,3 +38,18 @@ export const upload = multer({
 });
 
 export const UPLOAD_DIR_PATH = UPLOAD_DIR;
+
+/** Elimina un archivo de upload por su ruta URL (ej. /uploads/xxx.jpg) */
+export function deleteUploadByUrl(url: string | null | undefined): void {
+  if (!url?.startsWith("/uploads/")) return;
+  const filename = url.replace(/^\/uploads\//, "");
+  if (!filename) return;
+  const filePath = path.join(UPLOAD_DIR, filename);
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch {
+    // Ignorar errores al eliminar (archivo puede no existir)
+  }
+}

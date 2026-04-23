@@ -25,12 +25,14 @@ export type SettingApi = Prisma.SettingGetPayload<object>;
 
 export type CategoryApi = Prisma.CategoryGetPayload<object>;
 
+export type TaxApi = Prisma.TaxGetPayload<object>;
+
 export type UserApi = Prisma.UserGetPayload<object>;
 
 export type LocationApi = Prisma.LocationGetPayload<object>;
 
 export type ProductApi = Prisma.ProductGetPayload<{
-  include: { category: true; variants: true; images: true };
+  include: { category: true; tax: true; variants: true; images: true };
 }> & {
   inventory?: Array<{
     id: string;

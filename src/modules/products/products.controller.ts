@@ -9,7 +9,8 @@ router.get("/", async (req, res) => {
   try {
     const tenantId = req.query.tenantId as string | undefined;
     const includeArchived = req.query.includeArchived === "true";
-    const products = await productsService.getAll(tenantId, includeArchived);
+    const search = req.query.search as string | undefined;
+    const products = await productsService.getAll(tenantId, includeArchived, search);
     sendSuccess<ProductApi[]>(res, "Listado correctamente", products);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al listar productos";
@@ -23,7 +24,7 @@ router.get("/:id", async (req, res) => {
     if (!product) {
       return sendError(res, "Producto no encontrado", ["Product not found"], 404);
     }
-    sendSuccess(res, "Obtenido correctamente", product);
+    sendSuccess<ProductApi>(res, "Obtenido correctamente", product);
   } catch (e) {
     const err = e instanceof Error ? e.message : "Error al obtener producto";
     sendError(res, "Error al obtener producto", [err], 500);
@@ -35,6 +36,7 @@ router.post("/", async (req, res) => {
     const {
       tenantId,
       name,
+      taxId,
       description,
       categoryId,
       type,
@@ -47,14 +49,15 @@ router.post("/", async (req, res) => {
       imageUrl,
       inventoryByLocation,
     } = req.body;
-    if (!tenantId || !name || !type) {
+    if (!tenantId || !name || !type || !taxId) {
       return sendError(res, "Datos incompletos", [
-        "tenantId, name y type son requeridos",
+        "tenantId, name, type y taxId son requeridos",
       ]);
     }
     const product = await productsService.create({
       tenantId,
       name,
+      taxId,
       description,
       categoryId,
       type,
@@ -86,6 +89,7 @@ router.patch("/:id", async (req, res) => {
   try {
     const {
       name,
+      taxId,
       description,
       categoryId,
       type,
@@ -101,6 +105,7 @@ router.patch("/:id", async (req, res) => {
     } = req.body;
     const product = await productsService.update(req.params.id, {
       name,
+      taxId,
       description,
       categoryId,
       type,

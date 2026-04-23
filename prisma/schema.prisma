@@ -40,12 +40,14 @@ model Tenant {
   id          String   @id @default(uuid())
   name        String
   subdomain   String   @unique
+  logoUrl     String?
   plan        String?
   status      String?
   createdAt   DateTime @default(now())
 
   users             User[]
   settings          Setting[]
+  taxes             Tax[]
   locations         Location[]
   products          Product[]
   categories        Category[]
@@ -58,12 +60,27 @@ model Tenant {
   purchases         Purchase[]
 }
 
+model Tax {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  rate      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  products  Product[]
+
+  @@unique([tenantId, name])
+}
+
 model User {
   id          String   @id @default(uuid())
   tenantId    String
   name        String
   email       String
   password    String
+  phone       String?
   role        UserRole
   status      String?
   createdAt   DateTime @default(now())
@@ -98,6 +115,7 @@ model Category {
 model Product {
   id           String   @id @default(uuid())
   tenantId     String
+  taxId        String
   name         String
   description  String?
   categoryId   String?
@@ -113,6 +131,7 @@ model Product {
   updatedAt    DateTime @updatedAt
 
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  tax          Tax      @relation(fields: [taxId], references: [id])
   category     Category? @relation(fields: [categoryId], references: [id])
   variants     ProductVariant[]
   images       ProductImage[]
