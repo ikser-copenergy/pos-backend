@@ -13,6 +13,7 @@ const MAX_LIMIT = 100;
 router.get("/", async (req, res) => {
   try {
     const tenantId = req.query.tenantId as string | undefined;
+    const search = (req.query.search as string | undefined)?.trim() || undefined;
     const pageParam = req.query.page as string | undefined;
     const limitParam = req.query.limit as string | undefined;
 
@@ -27,7 +28,7 @@ router.get("/", async (req, res) => {
       const result = await customersService.getAllPaginated(tenantId, page, limit);
       sendSuccess<PaginatedResult<CustomerWithDebtApi>>(res, "Listado correctamente", result);
     } else {
-      const customers = await customersService.getAll(tenantId);
+      const customers = await customersService.getAll(tenantId, search);
       sendSuccess<CustomerApi[]>(res, "Listado correctamente", customers);
     }
   } catch (e) {

@@ -3,9 +3,20 @@ import { prisma } from "../../lib/prisma";
 import type { CreateCustomerDto, UpdateCustomerDto } from "./customers.dto";
 
 export const customersRepository = {
-  findAll: (tenantId?: string) =>
+  findAll: (tenantId?: string, search?: string) =>
     prisma.customer.findMany({
-      where: tenantId ? { tenantId } : undefined,
+      where: {
+        ...(tenantId ? { tenantId } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { phone: { contains: search, mode: "insensitive" } },
+                { email: { contains: search, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { name: "asc" },
     }),
 
