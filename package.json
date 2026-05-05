@@ -22,7 +22,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "test": "node -e \"process.exit(0)\""
+    "test": "node -e \"process.exit(0)\"",
+    "deploy": "bash -lc 'git pull --rebase && npm ci && npm run test || { echo \"ERROR: Unit tests failed. Aborting deploy.\"; exit 1; } && npx prisma generate && npx prisma migrate deploy && npm run build && (pm2 describe pos-backend >/dev/null || pm2 start dist/index.js --name pos-backend) && pm2 restart pos-backend && pm2 save'"
   },
   "repository": {
     "type": "git",
